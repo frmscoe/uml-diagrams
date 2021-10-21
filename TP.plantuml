@@ -1,0 +1,40 @@
+@startuml
+!pragma useVerticalIf on
+start
+:Determine beneficiary typolgies
+(rule, sub-map);
+while (foreach typology in sub-map that \ncontains received rule.id) is (more typologies)
+    :Determine all rules for this
+    typology from network sub-map;
+    :Fetch rule results from Redis;
+    :Add current rule result to cache result;
+    if(ruleResults.count == typology.rules.count) then (All rule results received)
+        if(Read typology expression from Node Cache) then (Not Cached)
+            :Read typology expression from ArangoDB;
+            :Save typology expression to Node Cache;
+        else (Cached)
+        endif
+        :Calculate typology score;
+        :Submit typology results to CADP;
+        note left
+            CADP Request contains:
+            * Typology result (typologyID, result, cfg)
+            * Received transaction
+            * Received network sub-map
+            * All rule results
+        end note
+        :Clear Redis cache for
+        this typology_transactionID;
+    else (Some rule results still pending)
+        :Save all rule results to Redis;
+    endif
+endwhile (no more typologies)
+:Reply to Rule Result;
+note right
+    Rule Response contains:
+    * Typology Processor Result:
+    <i>x typologies initiated for transaction ID: xxx</i>
+    * All CADP Requests;
+end note
+stop
+@enduml
