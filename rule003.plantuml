@@ -1,0 +1,32 @@
+@startuml
+start
+:The Channel Router and Setup Processor(CRSP);
+note right
+            *evaluate transaction and sub-map
+            *pass the ISO 20022 pain.001.001.11 message to the Rule Processors(RP) for Rule 003
+        end note
+while (foreach required channel) is (more channels)
+:Rule Processor;
+while (foreach rule processor) is (more rule processors)
+:Read rule config from config DB;
+ note right
+            Information Required:
+            * Rule Parameters (Rule Version)
+        end note
+:Read historical transactions from transaction history DB;
+:Compare the elapsed time since the most recent transaction 
+in the query result and the current transaction through the 
+CstmrCdtTrfInitn.GrpHdr.CreDtTm information with one of the time-bands;
+:Execute rule;
+:Submit rule result;
+endwhile (no more rule processors)
+note right
+    Rule output payload includes:
+    * Rule Results:
+    * Network sub-map
+    * Original transaction data;
+end note
+endwhile (no more channels)
+:Typology Processor;
+stop
+@enduml
