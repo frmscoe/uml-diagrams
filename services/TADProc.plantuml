@@ -23,7 +23,7 @@ endwhile (no more channel results)
 :send 200 response back to CADProc;
  note right
      Response inclues:
-        * Channel ID
+        * Channel-ID
         * Channel Results
      end note
 stop
