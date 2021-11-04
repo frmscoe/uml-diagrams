@@ -1,0 +1,30 @@
+@startuml
+start
+:Recieve payload from CADProc;
+note right
+   Channel output payload includes:
+    * Rule results
+    * Typology results
+    * Channel trigger results
+    * Network sub-map
+    * Original transaction data
+end note
+while (for each channel result recieved) is (more channel results)
+    :Determine transaction;
+    :Determine all channels;
+    :Read Transaction Configuration from database to determine review Message;
+     while (Channels results outstanding) is (more channel results)
+      :Write channel result to cache;
+   endwhile (channels complete)
+     :clear cache;
+     :write transactions to transaction history DB;
+     :Log review message (Review/None);
+endwhile (no more channel results)
+:send 200 response back to CADProc;
+ note right
+     Response inclues:
+        * Channel ID
+        * Channel Results
+     end note
+stop
+@enduml
