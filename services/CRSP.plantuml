@@ -17,7 +17,7 @@ else (no)
   stop
 endif
 : deduplicate all rules;
-while (foreach rule in the network sub-map) is (more typologies)
+while (foreach rule in the network sub-map) is (more rules)
     :Send Data;
      note right
             Data sent:
