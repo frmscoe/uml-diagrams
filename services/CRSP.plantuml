@@ -1,0 +1,37 @@
+@startuml
+start
+:Accept http POST request from Data Preparation;
+ note right
+            Data expected:
+            * transaction
+        end note
+:Read network map from Database;
+ note right
+            Required Parameter:
+            * Rule Version
+        end note
+if (Network map is found) then (yes)
+  : prune network map;
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+: deduplicate all rules;
+while (foreach rule in the network sub-map) is (more typologies)
+    :Send Data;
+     note right
+            Data sent:
+            * transaction
+            * network sub-map
+        end note
+endwhile (no more rules)
+:send response back to Data Preparation;
+ note right
+     Response inclues:
+        * Rules sent to
+        * Rules not sent to
+        * Transaction
+        * Network sub-map
+     end note
+stop
+@enduml
