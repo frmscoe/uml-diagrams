@@ -1,0 +1,20 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+:Read historical transactions from transactionHostory;
+:Determine Rule outcome based on the rule config;
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
