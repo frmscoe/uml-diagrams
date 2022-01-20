@@ -1,0 +1,62 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule Version
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (Historical transactions are found) then (yes)
+   if (The creditor in the current transaction has successfully made any payments) then (yes)
+   else (no)
+   : Return ruleResult as false;
+    note right
+            ruleResult:
+            * "id": "003@1.1.0",
+            * "cfg": "1.1.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "No verifiable prior creditor account activity detected"
+        end note
+   stop
+  endif
+  if (The creditor in the current transaction has successfully received any payments) then (yes)
+   else (no)
+   : Return ruleResult as false;
+   note right
+            ruleResult:
+            * "id": "003@1.1.0",
+            * "cfg": "1.1.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "No verifiable prior creditor account activity detected"
+        end note
+   stop
+  endif
+  :Compare the elapsed time since the most recent transaction 
+between the query results and the current transaction through the 
+creation date time information with the time-bands;
+   : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
