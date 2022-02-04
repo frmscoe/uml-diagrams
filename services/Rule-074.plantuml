@@ -1,0 +1,36 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule Version
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (Historical transactions are found) then (yes)
+   :Find the velocity between incoming and most recent pain001 messages
+using the geo-location properties CstmrCdtTrfInitn.SplmtryData.Envlp.Doc.InitgPty.Glctn.Lat, .Long, haversine formula 
+and CstmrCdtTrfInitn.GrpHdr.CreDtTm difference in hours;
+    :Evaluate rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
