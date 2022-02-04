@@ -5,18 +5,36 @@ start
             Data expected:
             * transaction
         end note
-:Read network map from Database;
- note right
+:Read active network map from Redis Cache;
+note right
             Required Parameter:
-            * Rule Version
+            * Cache key
         end note
-if (Network map is found) then (yes)
-  : prune network map;
+if (Active Network map is found in memory) then (yes)
 else (no)
-  : Return ruleResult as false and Log the error;
+:Read active network map from Database;
+if (Network map is found) then (yes)
+  :Save Active network map to cache;
+note right
+            Required Parameter:
+            * Cache key
+            * Active Network Map in JSON format
+            * Expiry time configured based on environment
+        end note
+else (no)
+  :Return No network map found in DB and Log the result;
+note right
+            Results:
+            * rulesSentTo: [],
+            * failedToSend: [],
+            * networkMap: {},
+            * transaction: req,
+        end note
   stop
 endif
-: deduplicate all rules;
+endif
+:prune network map;
+:deduplicate all rules;
 while (foreach rule in the network sub-map) is (more rules)
     :Send Data;
      note right
