@@ -1,0 +1,37 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule Version
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (Historical transactions exist) then (yes)
+    : Get the debtor's successful 008 Messages;
+    : Generate an array of counts of historical 008 
+    messages at intervals specified in the rule;
+    : Calculate Average and Standard Deviation;
+    : Check for the appropriate subRule and generate ruleResult;
+  else (no)
+    : Return Insufficent Transaction as ruleResult;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
