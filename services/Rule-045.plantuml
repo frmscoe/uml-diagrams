@@ -1,0 +1,38 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+note right
+            Example ruleResult:
+            * "id": "045@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".01",
+            * "result": true,
+            * "reason": "First recorded successful and complete incoming transaction received by the creditor"
+end note
+  :Read historical transactions from transactionHistory;
+else (no)
+  : Return ruleResult as true and Log the error;
+  stop
+endif
+:Determine rule result;
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
