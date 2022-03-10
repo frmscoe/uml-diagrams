@@ -11,7 +11,8 @@ while (foreach rule processor) is (more rule processors)
 :Read rule config from config DB;
  note right
             Information Required:
-            * Rule Parameters (Rule Version)
+            * Rule ID
+            * Rule CFG
         end note
 :Read historical transactions from transaction history DB;
 :Compare the elapsed time since the most recent transaction 

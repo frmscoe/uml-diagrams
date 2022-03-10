@@ -9,7 +9,8 @@ start
 :Read rule config from config DB;
     note right
         Required Parameter:
-            * Rule Version
+            * Rule ID
+            * Rule CFG
     end note
 if (Rule config is found & Rule config is valid) then (yes)
   if (Historical transactions are found) then (yes)
