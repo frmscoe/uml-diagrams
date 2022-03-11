@@ -1,0 +1,40 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  
+    : Historical transactions are found;
+  
+  : calculate debtor age information required for the execution of the rule must be retrieved from the equivalent pain.001 message;
+   : assign debtor to the correct age band;
+  if (Required age band is found) then (yes)
+   : assign debtor to the correct age band;
+  else (no)
+   : Return ruleResult as false and Log the error;
+   stop
+ 
+endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
