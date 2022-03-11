@@ -1,0 +1,33 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+          Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule Version
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (Historical transactions are found  in the graph database) then (yes)
+   :Compare the number of successful and completed transactions to the creditor against the threshold;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
