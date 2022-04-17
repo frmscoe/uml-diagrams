@@ -1,0 +1,60 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (The incoming pacs.008 message edge in the transaction network graph was found) then (yes)
+     : Find the debtor vertex linked to the pacs.008 transaction edge;
+      note right
+            *  "graph.transactions.to"
+        end note
+     : Using the Debtor vertex, find all transactions;
+     note right
+            Where:
+            * "graph.transactions.TxTp" = "pacs.008.001.10"
+            *  "graph.transactions.from" = incoming transaction debtor
+        end note
+  : Check the transaction distance for each transaction;
+  if (The Count for the number of transactions within the threshold distance is greater than the upperLimit for subRuleRef .00) then (yes)
+   else (no)
+   : Return ruleResult as false;
+   note right
+            ruleResult:
+            * "id": "075@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient transaction history"
+        end note
+   stop
+  endif
+  :Calculate the Haversine's distance between recent transaction and all the historical transaction data;
+  :Compare the outcome with the results table;
+  : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
