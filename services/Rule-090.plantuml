@@ -1,0 +1,63 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (Historical transactions are found) then (yes)
+   if (the debtor vertex linked to the incoming pacs.002 transaction edge) then (yes)
+   else (no)
+   : Return ruleResult as false;
+    note right
+            ruleResult:
+            * "id": "090@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient transaction history"
+        end note
+   stop
+  endif
+ 
+  if (Using the debtor vertex for the incoming transaction, find all the unique debtors ) then (yes)
+   else (no)
+   : Return ruleResult as false;
+   note right
+            ruleResult:
+            * "id": "090@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient transaction history"
+        end note
+   stop
+  endif
+   :Count the number of unique pain.001 transaction creditors (graph.transactions.to) from each of the upstream debtors over the last 8 hours;
+  :Compare the highest number of unique creditors to the bands table;
+       : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml
