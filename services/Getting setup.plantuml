@@ -1,0 +1,16 @@
+@startuml
+
+participant DevDocumentation
+participant DevEnvironment
+participant LoadingRuleProcessor
+participant DevelopNewRule
+participant TestRule
+participant DefinitionOfDone
+
+DevDocumentation -> DevEnvironment: Getting your Development Environment up
+DevEnvironment -> LoadingRuleProcessor: Once Dev environment is up,\ncheck your Rule Processor's on Openfaas \nto see that they are running 
+LoadingRuleProcessor-> DevelopNewRule: If the rule processors are up , \nstart developing your new rule.
+DevelopNewRule -> TestRule: Once the rule has been developed start Unit testing and \nthen creating different test cases through Postman
+TestRule -> DefinitionOfDone: Once your rule has been tested and developed,\nreview that it abidesby our definition of done.
+
+@enduml
