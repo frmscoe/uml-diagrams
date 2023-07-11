@@ -1,0 +1,54 @@
+@startuml NodeJS Vertical Scaling
+header NodeJS Vertical Scaling
+skinparam componentStyle uml2
+
+!define AzureYellow #F9A825
+!define AzureBlue #0078D4
+!define AzurePurple #512DA8
+!define AzureGreen #007A3E
+
+rectangle "Azure VM\n(32 CPUs, 128 GB RAM)" as VM {
+    package "Node.js App 110" <<Node.js App 110>> {
+        [Worker 1]
+        [Worker 2]
+        [Worker 3]
+        [Worker 4]
+        [Worker 5]
+        [Worker 6]
+        [Worker 7]
+        [Worker 8]
+    }
+    package "Node.js App 3" <<Node.js App 3>> {
+        [Worker 1]
+        [Worker 2]
+        [Worker 3]
+        [Worker 4]
+        [Worker 5]
+        [Worker 6]
+        [Worker 7]
+        [Worker 8]
+    }
+    package "Node.js App 2" <<Node.js App 2>> {
+        [Worker 1]
+        [Worker 2]
+        [Worker 3]
+        [Worker 4]
+        [Worker 5]
+        [Worker 6]
+        [Worker 7]
+        [Worker 8]
+    }
+    package "Node.js App 1" <<Node.js App 1>> {
+        [Worker 1]
+        [Worker 2]
+        [Worker 3]
+        [Worker 4]
+        [Worker 5]
+        [Worker 6]
+        [Worker 7]
+        [Worker 8]
+    }
+
+}
+
+@enduml

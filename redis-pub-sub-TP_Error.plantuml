@@ -1,0 +1,44 @@
+@startuml Main flow + Error Handling
+participant "Channel Router Setup Processor" as crsp
+participant "Rule Processor" as rp
+participant "redis" as r
+participant "Typology Processor" as t
+participant "Channel Aggreggation Decision Processor" as cadp
+
+group Startup
+    t -> r: Subscribe RuleResultChannel
+end group
+
+group Main Success
+    crsp->rp: HTTP POST RuleRequest
+    rp->r: PUBLISH RuleResultChannel RuleResult
+    r->t: RuleResult
+    r->rp: 1
+    note over r, rp
+    Number of clients that 
+    received the message 
+    end note
+    rp->crsp: Done
+    t->cadp: HTTP POST TypologyResult
+end group
+
+group #LightPink ALT TP Error
+    crsp->rp: HTTP POST RuleRequest
+    rp->r: PUBLISH RuleResultChannel RuleResult
+    r->t: RuleResult
+    r->rp: 1
+    note over r, rp
+    Number of clients that 
+    received the message 
+    end note
+    rp->crsp: Done
+    t->t: Internal Error
+    note over t #Orange
+    No guaranteed processing of Rule Result - 
+    causes this transaction to never finish, 
+    as Typology never finishes, as this Rule 
+    Result was lost.
+    end note 
+end group
+
+@enduml

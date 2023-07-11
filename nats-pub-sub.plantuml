@@ -1,0 +1,106 @@
+@startuml Scale Typology Processor
+participant "Data Prep" as dp
+participant "Channel Router Setup Processor" as crsp
+participant "Channel Router Setup Processor_1" as crsp1
+participant "JS_Rule Request" as rr
+participant "Rule Processor 001" as rp1
+participant "Rule Processor 001_1" as rp1_1
+participant "Rule Processor 002" as rp2
+participant "Rule Processor 003" as rp3
+participant "JS_Rule Result 001" as rr1
+participant "JS_Rule Result 002" as rr2
+participant "JS_Rule Result 003" as rr3
+participant "Typology Processor 1" as t1
+participant "Typology Processor 1_1" as t1_1
+participant "Typology Processor 2" as t2
+participant "Typology Processor 2_2" as t2_2
+participant "JS_Typology Result 1" as tr1
+participant "JS_Typology Result 2" as tr2
+participant "Transaction Aggreggation Decision Processor" as cadp
+participant "Transaction Aggreggation Decision Processor_1" as cadp_1
+participant "Case Managemenet Service" as cm
+
+group CRSP Startup
+    crsp->rr: Create Stream RuleRequest
+    crsp1->rr: Create Stream RuleRequest
+    end group
+
+    group Rule Startup
+        rp1 -> rr: Subscribe RuleRequest\ndurable_name: Rule-001
+        rp1 -> rr1 : Create Rule Response 001
+        rp1_1 -> rr: Subscribe RuleRequest\ndurable_name: Rule-001
+        rp1_1 -> rr1 : Create Rule Response 001
+        rp2 -> rr: Subscribe RuleRequest
+        rp2 -> rr2 : Create Rule Response 002
+        rp3 -> rr: Subscribe RuleRequest
+        rp3 -> rr3 : Create Rule Response 003
+        end group
+
+        group Typology Startup
+            t1 -> rr1: Subscribe Stream: RuleResponseRule_001 ; \ndurable_name: typology1
+            t1 -> rr2: Subscribe Stream: RuleResponseRule_002 ; \ndurable_name: typology1
+            t1 -> tr1: Create Typology Result 1
+            t1_1 -> rr1: Subscribe Stream: RuleResponseRule_001 ; \ndurable_name: typology1
+            t1_1 -> rr2: Subscribe Stream: RuleResponseRule_002 ; \ndurable_name: typology1
+            t1_1 -> tr1: Create Typology Result 1
+            t2 -> rr2: Subscribe Stream: RuleResponseRule_002 ; \ndurable_name: typology2
+            t2 -> rr3: Subscribe Stream: RuleResponseRule_003 ; \ndurable_name: typology2
+            t2 -> tr2: Create Typology Result 2
+            t2_2 -> rr2: Subscribe Stream: RuleResponseRule_002 ; \ndurable_name: typology2
+            t2_2 -> rr3: Subscribe Stream: RuleResponseRule_003 ; \ndurable_name: typology2
+            t2_2 -> tr2: Create Typology Result 2
+            end group
+
+            group CADP Startup
+                cadp -> tr1: Subscribe Stream: Typology Result 1 ; \ndurable_name: CADP1
+                cadp -> tr2: Subscribe Stream: Typology Result 2 ; \ndurable_name: CADP1
+                cadp_1 -> tr1: Subscribe Stream: Typology Result 1 ; \ndurable_name: CADP1
+                cadp_1 -> tr2: Subscribe Stream: Typology Result 2 ; \ndurable_name: CADP1
+                end group
+
+                group Transaction 1
+                    dp->crsp: HTTP POST Transaction
+                    crsp->rr: PUBLISH RuleRequest
+                    crsp->dp: HTTP Response
+                    rr->rp1: PUBLISH RuleRequest
+                    rr->rp2: PUBLISH RuleRequest
+                    rr->rp3: PUBLISH RuleRequest
+                    rp1->rr1: PUBLISH Rule Response 1
+                    rp2->rr2: PUBLISH Rule Response 2
+                    rp3->rr3: PUBLISH Rule Response 3
+                    rr1->t1: PUBLISH Rule Response 1
+                    rr2->t1: PUBLISH Rule Response 2
+                    rr2->t2_2: PUBLISH Rule Response 2
+                    rr3->t2_2: PUBLISH Rule Response 3
+                    t1->tr1: PUBLISH Typology Response 1
+                    t2_2->tr2: PUBLISH Typology Response 2
+                    tr1->cadp: PUBLISH Typology Response 1
+                    tr2->cadp_1: PUBLISH Typology Response 2
+                    cadp->cadp: PUBLISH TADP Response
+                    cadp_1->cadp_1: PUBLISH TADP Response
+                    cm->cm: END
+                    end group
+                
+                group Transaction 2
+                    dp->crsp1: HTTP POST Transaction
+                    crsp1->rr: PUBLISH RuleRequest
+                    crsp1->dp: HTTP Response
+                    rr->rp1_1: PUBLISH RuleRequest
+                    rr->rp2: PUBLISH RuleRequest
+                    rr->rp3: PUBLISH RuleRequest
+                    rp1->rr1: PUBLISH Rule Response 1
+                    rp2->rr2: PUBLISH Rule Response 2
+                    rp3->rr3: PUBLISH Rule Response 3
+                    rr1->t1: PUBLISH Rule Response 1
+                    rr2->t1: PUBLISH Rule Response 2
+                    rr2->t2: PUBLISH Rule Response 2
+                    rr3->t2: PUBLISH Rule Response 3
+                    t1->tr1: PUBLISH Typology Response 1
+                    t2->tr2: PUBLISH Typology Response 2
+                    tr1->cadp: PUBLISH Typology Response 1
+                    tr2->cadp_1: PUBLISH Typology Response 2
+                    cadp->cm: PUBLISH TADP Response
+                    cadp_1->cm: PUBLISH TADP Response
+                    cm->cm: END
+                    end group
+                    @enduml

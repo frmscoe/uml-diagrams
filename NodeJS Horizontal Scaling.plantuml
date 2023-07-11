@@ -1,0 +1,58 @@
+@startuml NodeJS Horizontal Scaling
+header NodeJS Horizontal Scaling
+skinparam componentStyle uml2
+
+!define AzureYellow #F9A825
+!define AzureBlue #0078D4
+!define AzurePurple #512DA8
+!define AzureGreen #007A3E
+
+package "Azure VM 1\n(4 CPUs, 16 GB RAM)" as VM1 {
+    package "Node.js App 110" <<Node.js App>> {
+    }
+    package "Node.js App 3" <<Node.js App>> {
+    }
+    package "Node.js App 2" <<Node.js App>> {
+    }
+    package "Node.js App 1" <<Node.js App>> {
+    }
+
+    ' VM1 -down-> Node.jsApp1: <<deploy>>
+    ' VM1 -down-> Node.jsApp2: <<deploy>>
+    ' VM1 -down-> Node.jsApp3: <<deploy>>
+}
+
+package "Azure VM 2\n(4 CPUs, 16 GB RAM)" as VM2 {
+    package "Node.js App 220" <<Node.js App>> {
+    }
+    package "Node.js App 113" <<Node.js App>> {
+    }
+    package "Node.js App 112" <<Node.js App>> {
+    }
+    package "Node.js App 111" <<Node.js App>> {
+    }
+
+    ' VM2 -down-> Node.jsApp4: <<deploy>>
+    ' VM2 -down-> Node.jsApp5: <<deploy>>
+    ' VM2 -down-> Node.jsApp6: <<deploy>>
+}
+
+package "Azure VM 3\n(4 CPUs, 16 GB RAM)" as VM3 {
+    package "Node.js App 330" <<Node.js App>> {
+    }
+    package "Node.js App 223" <<Node.js App>> {
+    }
+    package "Node.js App 222" <<Node.js App>> {
+    }
+    package "Node.js App 221" <<Node.js App>> {
+    }
+
+    ' VM3 -down-> Node.jsApp7: <<deploy>>
+    ' VM3 -down-> Node.jsApp8: <<deploy>>
+    ' VM3 -down-> Node.jsApp9: <<deploy>>
+}
+
+VM1 .. VM2
+VM2 .. VM3
+
+@enduml

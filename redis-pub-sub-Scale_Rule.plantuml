@@ -1,0 +1,31 @@
+@startuml Scale Rule Processor
+participant "Channel Router Setup Processor" as crsp
+participant "Rule Processor" as rp
+participant "Rule Processor 2" as rp2
+participant "redis" as r
+participant "Typology Processor" as t
+participant "Channel Aggreggation Decision Processor" as cadp
+
+group Startup
+    t -> r: Subscribe RuleResultChannel
+end group
+
+group Request 1
+    crsp->rp: HTTP POST RuleRequest
+    rp->r: PUBLISH RuleResultChannel RuleResult
+    r->t: RuleResult
+    r->rp: 1
+    rp->crsp: Done
+    t->cadp: HTTP POST TypologyResult
+end group
+
+group Request 2
+    crsp->rp2: HTTP POST RuleRequest
+    rp2->r: PUBLISH RuleResultChannel RuleResult
+    r->t: RuleResult
+    r->rp2: 1
+    rp2->crsp: Done
+    t->cadp: HTTP POST TypologyResult
+end group
+
+@enduml
