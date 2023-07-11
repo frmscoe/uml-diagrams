@@ -1,0 +1,55 @@
+@startuml
+start
+:Accept http POST request from Data Preparation;
+ note right
+            Data expected:
+            * transaction
+        end note
+:Read active network map from Redis Cache;
+note right
+            Required Parameter:
+            * Cache key
+        end note
+if (Active Network map is found in memory) then (yes)
+else (no)
+:Read active network map from Database;
+if (Network map is found) then (yes)
+  :Save Active network map to cache;
+note right
+            Required Parameter:
+            * Cache key
+            * Active Network Map in JSON format
+            * Expiry time configured based on environment
+        end note
+else (no)
+  :Return No network map found in DB and Log the result;
+note right
+            Results:
+            * rulesSentTo: [],
+            * failedToSend: [],
+            * networkMap: {},
+            * transaction: req,
+        end note
+  stop
+endif
+endif
+:prune network map;
+:deduplicate all rules;
+while (foreach rule in the network sub-map) is (more rules)
+    :Send Data;
+     note right
+            Data sent:
+            * transaction
+            * network sub-map
+        end note
+endwhile (no more rules)
+:send response back to Data Preparation;
+ note right
+     Response inclues:
+        * Rules sent to
+        * Rules not sent to
+        * Transaction
+        * Network sub-map
+     end note
+stop
+@enduml

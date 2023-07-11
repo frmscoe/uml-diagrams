@@ -1,0 +1,52 @@
+@startuml
+!pragma useVerticalIf on
+start
+:Accept the HTTP POST request (JSON);
+
+if (Request accepted?) then (yes)
+    :Swagger;
+    note left
+        * Running as a middleware
+        * The request visits swagger in the first time
+        * The config is defined in swagger.yml
+    end note
+        if (Is request format validated?) then (yes)
+        :Swagger;
+        else (no)
+        :Throw an error;
+        stop
+        note right
+            * code: SWAGGER_REQUEST_VALIDATION_FAILED
+            * errors: error description
+        end note
+        endif
+else (no)
+  :Error;
+  stop
+    note right
+        * HTTP 400 Bad Request
+    end note
+endif
+
+:Create object;
+note right
+    * Typescript object
+    * Valide object
+end note
+
+:Create Request to Data Preparation Service;
+note right
+    * HTTP Post request
+    * The json body includes
+        - The valid created object
+end note
+
+:Response;
+note right
+    * HTTP 200 Success
+    * message: Transaction is valid
+    * data: original tranasction object
+end note
+
+stop
+@enduml

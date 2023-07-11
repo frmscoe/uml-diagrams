@@ -1,0 +1,73 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+ if (If the current transaction is unsuccessful) then (no)
+  if (Historical transactions are found) then (yes)
+   if (Query the transaction network graph for the recent successful pacs.002 messages in the time-frame) then (yes)
+   else (no)
+   : Return ruleResult as false;
+    note right
+            ruleResult:
+            * "id": "025@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient transaction history"
+        end note
+   stop
+  endif
+  if (Find the debtor and creditor vertices linked to the pacs.008 transaction edge in the last 24hours) then (yes)
+   else (no)
+   : Return ruleResult as false;
+   note right
+            ruleResult:
+            * "id": "025@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient transaction history"
+        end note
+   stop
+  endif
+  :The sum of all transaction values of all successful and complete transactions received by debtor within 24 hours.;
+   : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (yes)
+  : Return ruleResult as false;
+  note right
+            ruleResult:
+            * "id": "025@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".01",
+            * "result": false,
+            * "reason": "Unsuccessful transaction"
+        end note
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+else (no)
+   : Return ruleResult as false;
+   stop
+@enduml

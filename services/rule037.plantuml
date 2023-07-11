@@ -1,0 +1,54 @@
+@startuml rule037
+start
+:Accept http POST request from CRSP;
+    note right
+        Data from CRSP:
+            * transaction
+            * network sub-map
+    end note
+:Read rule config from config DB;
+    note right
+        Required Parameter:
+            * Rule Version
+    end note
+if (Rule config is found & Rule config is valid) then (yes)
+  if (the creditor vertex linked to the creditor account vertex for the pacs.002 message edge is found) then (yes)
+  note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+  if (account_holder edge linked to the creditor account vertex is found) then (yes)
+  if (the ACTIO_EID in the creditor node) then (yes)
+    if (Creditor actio_eid is in watch list collection) then (yes) 
+        : Return Creditor is watch-listed;
+    else (no)
+        : Return Creditor is not watch-listed;
+        endif
+   : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (no)
+  : Return ruleResult as false and Log the error;
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+@enduml

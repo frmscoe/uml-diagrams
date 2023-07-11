@@ -1,0 +1,30 @@
+@startuml
+start
+: CADPROC receives pain.001.001.11.json from the typology processor;
+: Determines beneficiary channel from the network sub-map;
+: Determines which other typologies in this channel has been invoked;
+: Retrieves any previously cached typology results for the channel;
+: Checks channel completion;
+if (more typology results) then (yes)
+   : Cache typology results and return channel results as Incomplete;
+    stop
+else (no)
+   : Append results and return channel results as Complete;
+   : Submit channel results to the TadProc;
+      note right
+            Required Parameters:
+            * Transaction info
+            * Network sub-map 
+            * Typology results 
+            * Rule results
+            * Channel results
+        end note
+  endif
+: Clear the cache;
+: Communicate results for the Cadproc to the typology processor;
+   note right
+            Required Parameters:
+            * Copy of the entire outgoing message to Tadproc
+        end note
+stop
+@enduml

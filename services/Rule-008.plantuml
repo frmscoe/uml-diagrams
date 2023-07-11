@@ -1,0 +1,74 @@
+@startuml
+start
+:Accept http POST request from CRSP;
+ note right
+            Data from CRSP:
+            * Pacs 002 transaction
+            * network sub-map
+        end note
+:Read rule config from config DB;
+ note right
+            Required Parameter:
+            * Rule ID
+            * Rule CFG
+        end note
+if (Rule config is found & Rule config is valid) then (yes)
+ if (If the current transaction is unsuccessful) then (no)
+  if (Historical transactions are found) then (yes)
+   if (If the debtor has sent two consecutive successful transactions to the same creditor ) then (yes)
+   else (no)
+   : Return ruleResult as false;
+    note right
+            ruleResult:
+            * "id": "008@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient account history"
+        end note
+   stop
+  endif
+  if (Find the 002 graph edge for the corresponding 008 edge to match the last 2 payments and successful sent from debtor ) then (yes)
+   else (no)
+   : Return ruleResult as false;
+   note right
+            ruleResult:
+            * "id": "008@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".00",
+            * "result": false,
+            * "reason": "Insufficient account history"
+        end note
+   stop
+  endif
+  :Compare the creditor account from the most recent pacs.008 message with 
+   the creditor account from the second-most recent pacs.008 message;
+   : determine rule result;
+  else (no)
+   : Return ruleResult as false;
+   stop
+  endif
+else (yes)
+  : Return ruleResult as false;
+  note right
+            ruleResult:
+            * "id": "008@1.0.0",
+            * "cfg": "1.0.0",
+            * "subRuleRef": ".01",
+            * "result": false,
+            * "reason": "Unsuccessful transaction"
+        end note
+  stop
+endif
+:Submit rule result to the typology processor;
+note right
+    Rule output payload includes:
+    * Rule Result
+    * Network sub-map
+    * Original transaction data;
+end note
+stop
+else (no)
+   : Return ruleResult as false;
+   stop
+@enduml
