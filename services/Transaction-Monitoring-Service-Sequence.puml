@@ -1,0 +1,168 @@
+@startuml
+autonumber
+
+box "FRMS"
+    Actor "External Client" as Client
+    participant "Transaction Monitoring Service" as TMS
+    Entity "Logger" as log
+    Database "ArangoDB" as Ara
+    Database "Redis Cache" as Cache
+    participant "Channel Router Setup Processor" as CRSP
+end box
+
+
+
+
+== ISO20022 Message ==
+group#DimGrey Pain001
+    Client -> TMS: POST /execute: Pain001.001.11 Message
+    TMS -> TMS: Validate Pain001
+    TMS -> log: Logging of receipt
+    alt#Salmon Validation Error
+        TMS -> log: Logging of error
+        TMS -> Client: /execute POST Result
+    end
+    group#LightBlue handle
+        group#BlueViolet parallel promise
+            TMS -> Ara: saveTransactionHistory(pain001)
+            TMS -> Ara: addAccount(debtor)
+            TMS -> Ara: addAccount(creditor)
+            TMS -> Ara: addEntity(debtor)
+            TMS -> Ara: addEntity(creditor)
+            TMS -> Cache: setJson(DataCache)
+        end
+        group#BlueViolet parallel promise
+            group#LightGray preCache
+                TMS -> Cache: setJson(transaction)
+                TMS -> Ara: saveTransactionRelationship
+            end
+            TMS -> Ara: addAccountHolder(creditor)
+            TMS -> Ara: addAccountHolder(debtor)
+        end
+        TMS -> CRSP: NATS handleResponse: Pain001 Message
+    end
+    alt#Salmon Error
+        TMS -> log: Logging of error
+        TMS -> TMS: Throw error
+    end
+    TMS -> log: Transaction send to CRSP service
+    TMS -> Client: /execute POST Result
+end
+
+group#DimGrey Pain013
+    Client -> TMS: POST /quoteReply: Pain013.001.09 Message
+    TMS -> TMS: Validate Pain013
+    TMS -> log: Logging of receipt
+    alt#Salmon Validation Error
+        TMS -> log: Logging of error
+        TMS -> Client: /quoteReply POST Result
+    end
+    group#LightBlue handle
+        TMS -> Cache: getJson(DataCache)
+        alt#Grey rebuildCache
+            TMS -> Ara: getTransactionPain001
+            alt#Salmon Error
+                TMS -> TMS: Throw error
+            end
+            TMS -> TMS: rebuildCache
+            TMS -> Cache: setJson(DataCache)
+        end
+        group#BlueViolet parallel promise
+            TMS -> Ara: saveTransactionHistory(pain013)
+            TMS -> Ara: addAccount(debtor)
+            TMS -> Ara: addAccount(creditor)
+        end
+        group#LightGray preCache
+            TMS -> Cache: setJson(transaction)
+            TMS -> Ara: saveTransactionRelationship
+        end
+        TMS -> CRSP: NATS handleResponse: Pain013 Message
+    end
+    alt#Salmon Error
+        TMS -> log: Logging of error
+        TMS -> TMS: Throw error
+    end
+    TMS -> log: Transaction send to CRSP service
+    TMS -> Client: /quoteReply POST Result
+end
+
+group#DimGrey Pacs008
+    Client -> TMS: POST /transfer: Pacs008.001.10 Message
+    TMS -> TMS: Validate Pacs008
+    TMS -> log: Logging of receipt
+    alt#Salmon Validation Error
+        TMS -> log: Logging of error
+        TMS -> Client: /transfer POST Result
+    end
+    group#LightBlue handle
+        TMS -> Cache: getJson(DataCache)
+        alt#Grey rebuildCache
+            TMS -> Ara: getTransactionPain001
+            alt#Salmon Error
+                TMS -> TMS: Throw error
+            end
+            TMS -> TMS: rebuildCache
+            TMS -> Cache: setJson(DataCache)
+        end
+        group#BlueViolet parallel promise
+            TMS -> Ara: saveTransactionHistory(pacs008)
+            TMS -> Ara: addAccount(debtor)
+            TMS -> Ara: addAccount(creditor)
+        end
+        group#LightGray preCache
+            TMS -> Cache: setJson(transaction)
+            TMS -> Ara: saveTransactionRelationship
+        end
+        TMS -> CRSP: NATS handleResponse: Pacs008 Message
+    end
+    alt#Salmon Error
+        TMS -> log: Logging of error
+        TMS -> TMS: Throw error
+    end
+    TMS -> log: Transaction send to CRSP service
+    TMS -> Client: /transfer POST Result
+end
+
+group#DimGrey Pacs002
+    Client -> TMS: POST /transfer-response: Pacs002.001.12 Message
+    TMS -> TMS: Validate Pacs002
+    TMS -> log: Logging of receipt
+    alt#Salmon Validation Error
+        TMS -> log: Logging of error
+        TMS -> Client: /transfer-response POST Result
+    end
+    group#LightBlue handle
+        TMS -> Cache: getJson(DataCache)
+        alt#Grey rebuildCache
+            TMS -> Ara: getTransactionPain001
+            alt#Salmon Error
+                TMS -> TMS: Throw error
+            end
+            TMS -> TMS: rebuildCache
+            TMS -> Cache: setJson(DataCache)
+        end
+        
+        TMS -> Ara: saveTransactionHistory(pacs002)
+        group transactionRelationship
+            TMS -> Ara: getTransactionHistoryPacs008
+            alt#Salmon Error
+                TMS -> TMS: Throw error
+            end
+            TMS -> TMS: build transactionRelationship from Pacs008
+            group#LightGray preCache
+                TMS -> Cache: setJson(transaction)
+                TMS -> Ara: saveTransactionRelationship
+            end
+        end
+        TMS -> CRSP: NATS handleResponse: Pacs008 Message
+    end
+    alt#Salmon Error
+        TMS -> log: Logging of error
+        TMS -> TMS: Throw error
+    end
+    TMS -> log: Transaction send to CRSP service
+    TMS -> Client: /transfer-response POST Result
+end
+
+@enduml
+
