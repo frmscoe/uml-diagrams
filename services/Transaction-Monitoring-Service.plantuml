@@ -31,10 +31,16 @@ endif
 :Create object;
 note right
     * Typescript object
-    * Valide object
+    * Valid object
 end note
 
-:Create Request to Data Preparation Service;
+:Populate Database;
+note right
+    * The json body includes
+        - The valid created object
+end note
+
+:Create Request to Channel Router Setup Processor;
 note right
     * HTTP Post request
     * The json body includes
