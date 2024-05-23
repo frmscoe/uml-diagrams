@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # UML Diagrams for FRM
 
 1. Search and install 'PlantUML' extension in the vscode app.

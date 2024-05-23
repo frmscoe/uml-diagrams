@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml Scale Typology Processor
 participant "Channel Router Setup Processor" as crsp
 participant "Rule-001" as rp
