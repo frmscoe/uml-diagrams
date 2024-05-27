@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml gRPC+OpenFaas scaling
 queue "service 1" as s1
 box "\nOpenFaaS\n" #LightGray

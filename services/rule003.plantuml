@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml
 start
 :The Channel Router and Setup Processor(CRSP);

@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml
 participant "Channel Router Setup Processor" as co
 participant "Rule Engine" as re

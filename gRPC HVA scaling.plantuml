@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml gRPC+HPA scaling
 queue "Service 1" as s1
 control "Linkerd Proxy" as lp

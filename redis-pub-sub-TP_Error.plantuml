@@ -1,3 +1,5 @@
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml Main flow + Error Handling
 participant "Channel Router Setup Processor" as crsp
 participant "Rule Processor" as rp
